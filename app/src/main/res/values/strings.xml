@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">WordsTest</string>
+    <string name="word">Enter your word</string>
+    <string name="translation">Translation for this word</string>
+    <string name="addButton">Add word</string>
+    <string name="context_delete">Delete</string>
+    <string name="context_rename">Rename</string>
+    <string name="options_delete_all">Delete all</string>
+    <string name="training">Start Training</string>
+    <string name="newword">Add word</string>
+    <string name="nextButton">Next</string>
+    <string name="word_update">Word updated</string>
+    <string name="word_update_error">Error with update</string>
+    <string name="word_saved_error">Error with adding word</string>
+    <string name="word_saved">Word added</string>
+    <string name="dialog_new_word">New word</string>
+    <string name="dialog_new_word_enter">Enter word and translation to the dictionary</string>
+    <string name="dialog_your_word">Your word</string>
+    <string name="dialog_your_translation">Your translation</string>
+</resources>
