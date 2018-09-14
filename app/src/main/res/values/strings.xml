@@ -17,4 +17,9 @@
     <string name="dialog_new_word_enter">Enter word and translation to the dictionary</string>
     <string name="dialog_your_word">Your word</string>
     <string name="dialog_your_translation">Your translation</string>
+    <string name="dialog_rename_word">Rename word</string>
+    <string name="dialog_rename_input">Enter new name and translation</string>
+    <string name="dialog_add_button">Add</string>
+    <string name="dialog_rename_button">Rename</string>
+    <string name="dialog_toast_empty">You should enter word and translation!</string>
 </resources>

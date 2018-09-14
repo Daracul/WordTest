@@ -12,11 +12,15 @@ import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -31,29 +35,30 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private static final String LOG_TAG = "myLogs";
 
-    private static final int CONTEXT_MENU_RENAME = 1;
-    private static final int CONTEXT_MENU_DELETE = 2;
+    public static final int CONTEXT_MENU_RENAME = 1;
+    public static final int CONTEXT_MENU_DELETE = 2;
     private static final int OPTIONS_MENU_NEW_WORD = 3;
     private static final int OPTIONS_MENU_TRAINING = 4;
     private static final int OPTIONS_MENU_DELETE_ALL = 5;
-    ListView listView;
-    SimpleCursorAdapter simpleCursorAdapter;
-    ArrayList<Word> myWordsList;
+    private RecyclerView recyclerView;
+    private ArrayList<Word> myWordsList;
+    private WordsRecyclerAdapter mWordsAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        listView = (ListView) findViewById(R.id.listView);
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setHasFixedSize(true);
 
+        DividerItemDecoration divider = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
+        recyclerView.addItemDecoration(divider);
+        mWordsAdapter = new WordsRecyclerAdapter(this, null);
+        recyclerView.setAdapter(mWordsAdapter);
 
-        // forming columns to set data to each other
-        String[] from = new String[]{WordsContract.WordsEntry.COLUMN_WORD, WordsContract.WordsEntry.COLUMN_TRANLATION};
-        int[] to = new int[]{android.R.id.text1, android.R.id.text2};
-
-        simpleCursorAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2, null, from, to, 0);
-        listView.setAdapter(simpleCursorAdapter);
-        registerForContextMenu(listView);
         getSupportLoaderManager().initLoader(0, null, this);
     }
 
@@ -90,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void addWord(String word, String translation) {
         //adding new word to db and getting new loader
         if (word.isEmpty() || translation.isEmpty()) {
-            Toast.makeText(this, "You should enter word and translation!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.dialog_toast_empty, Toast.LENGTH_SHORT).show();
             return;
         }
         ContentValues values = new ContentValues();
@@ -106,33 +111,28 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
 
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        menu.add(0, CONTEXT_MENU_RENAME, 0, R.string.context_rename);
-        menu.add(0, CONTEXT_MENU_DELETE, 0, R.string.context_delete);
-
-    }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         //getting id of record
-        AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+//        AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        int position = mWordsAdapter.getPosition();
+        Log.d(LOG_TAG, "position= " + position +"\n menuitem id = " + item.getItemId());
         if (item.getItemId() == CONTEXT_MENU_DELETE) {
-            Uri currentWordUri = Uri.withAppendedPath(WordsContract.WordsEntry.CONTENT_URI, String.valueOf(acmi.id));
+            Uri currentWordUri = Uri.withAppendedPath(WordsContract.WordsEntry.CONTENT_URI, String.valueOf(position));
             getContentResolver().delete(currentWordUri, null, null);
         }
         if (item.getItemId() == CONTEXT_MENU_RENAME) {
-            renameWordWithDialog(acmi.id);
-            Log.d(LOG_TAG, "acmi.id= " + acmi.id);
-
-
+            renameWordWithDialog(position);
         }
         return super.onContextItemSelected(item);
     }
 
     private void renameWordWithDialog(long id) {
-        createAndShowDialogWindow(id, "Rename word", "Enter new name and translation", "Your word", "Your translation");
+        createAndShowDialogWindow(id, getString(R.string.dialog_rename_word),
+                getString(R.string.dialog_rename_input),
+                getString(R.string.dialog_your_word),
+                getString(R.string.dialog_your_translation));
     }
 
 
@@ -147,11 +147,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         alert.setTitle(title);
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(60, 0, 60, 0);
+        editWord.setLayoutParams(lp);
+        editTranslation.setLayoutParams(lp);
         layout.addView(editWord);
         layout.addView(editTranslation);
         alert.setView(layout);
         if (id == -1) {
-            alert.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+            alert.setPositiveButton(R.string.dialog_add_button, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
                     //What ever you want to do with the value
                     addWord(editWord.getText().toString(), editTranslation.getText().toString());
@@ -166,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     editTranslation.setText(myWordsList.get(i).getTranslation());
                 }
             }
-            alert.setPositiveButton("Rename", new DialogInterface.OnClickListener() {
+            alert.setPositiveButton(R.string.dialog_rename_button, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     renameWord(wordId, editWord.getText().toString(), editTranslation.getText().toString());
@@ -200,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        simpleCursorAdapter.swapCursor(data);
+
 
         //create help list to easy get name of rows
         myWordsList = new ArrayList<>();
@@ -216,13 +220,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 myWordsList.add(new Word(data.getInt(idColIndex), data.getString(nameColIndex), data.getString(transColIndex)));
             } while (data.moveToNext());
         }
+        mWordsAdapter.swapCursor(myWordsList);
 
 
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        simpleCursorAdapter.swapCursor(null);
+        mWordsAdapter.swapCursor(null);
 
     }
 
