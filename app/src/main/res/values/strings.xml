@@ -22,4 +22,5 @@
     <string name="dialog_add_button">Add</string>
     <string name="dialog_rename_button">Rename</string>
     <string name="dialog_toast_empty">You should enter word and translation!</string>
+    <string name="text_view_no_words">There are no words in dictionary yet.\nPlease click add button to start</string>
 </resources>

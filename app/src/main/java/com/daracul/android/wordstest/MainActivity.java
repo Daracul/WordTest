@@ -2,13 +2,12 @@ package com.daracul.android.wordstest;
 
 import android.content.ContentValues;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,15 +15,12 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.daracul.android.wordstest.data.WordsContract;
@@ -37,12 +33,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     public static final int CONTEXT_MENU_RENAME = 1;
     public static final int CONTEXT_MENU_DELETE = 2;
-    private static final int OPTIONS_MENU_NEW_WORD = 3;
     private static final int OPTIONS_MENU_TRAINING = 4;
     private static final int OPTIONS_MENU_DELETE_ALL = 5;
     private RecyclerView recyclerView;
+    private TextView emptyView;
     private ArrayList<Word> myWordsList;
     private WordsRecyclerAdapter mWordsAdapter;
+
 
 
     @Override
@@ -50,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        emptyView = (TextView) findViewById(R.id.empty);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(true);
@@ -59,12 +57,23 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mWordsAdapter = new WordsRecyclerAdapter(this, null);
         recyclerView.setAdapter(mWordsAdapter);
 
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                createAndShowDialogWindow(-1, getString(R.string.dialog_new_word),
+                        getString(R.string.dialog_new_word_enter),
+                        getString(R.string.dialog_your_word),
+                        getString(R.string.dialog_your_translation));
+            }
+        });
+
+
         getSupportLoaderManager().initLoader(0, null, this);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(0, OPTIONS_MENU_NEW_WORD, 0, R.string.newword);
         menu.add(0, OPTIONS_MENU_TRAINING, 0, R.string.training);
         menu.add(0, OPTIONS_MENU_DELETE_ALL, 0, R.string.options_delete_all);
         return super.onCreateOptionsMenu(menu);
@@ -72,18 +81,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == OPTIONS_MENU_NEW_WORD) {
-            createAndShowDialogWindow(-1, getString(R.string.dialog_new_word),
-                    getString(R.string.dialog_new_word_enter),
-                    getString(R.string.dialog_your_word),
-                    getString(R.string.dialog_your_translation));
-        }
         if (item.getItemId() == OPTIONS_MENU_TRAINING) {
-            Intent intent = new Intent(this, Training.class);
-            Bundle bundle = new Bundle();
-            bundle.putParcelableArrayList(Training.KEY_TO_GET_LIST, myWordsList);
-            intent.putExtras(bundle);
-            startActivity(intent);
+            TrainingCards.start(this, myWordsList);
         }
         if (item.getItemId() == OPTIONS_MENU_DELETE_ALL) {
             getContentResolver().delete(WordsContract.WordsEntry.CONTENT_URI, null, null);
@@ -111,13 +110,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
 
-
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         //getting id of record
 //        AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        int position = mWordsAdapter.getPosition();
-        Log.d(LOG_TAG, "position= " + position +"\n menuitem id = " + item.getItemId());
+        int position = myWordsList.get(mWordsAdapter.getPosition()).getId();
+        Log.d(LOG_TAG, "position= " + position + "\n menuitem id = " + item.getItemId());
         if (item.getItemId() == CONTEXT_MENU_DELETE) {
             Uri currentWordUri = Uri.withAppendedPath(WordsContract.WordsEntry.CONTENT_URI, String.valueOf(position));
             getContentResolver().delete(currentWordUri, null, null);
@@ -147,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         alert.setTitle(title);
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         lp.setMargins(60, 0, 60, 0);
         editWord.setLayoutParams(lp);
         editTranslation.setLayoutParams(lp);
@@ -220,6 +218,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 myWordsList.add(new Word(data.getInt(idColIndex), data.getString(nameColIndex), data.getString(transColIndex)));
             } while (data.moveToNext());
         }
+        if (myWordsList.size()<1){
+            emptyView.setText(R.string.text_view_no_words);
+        } else emptyView.setText("");
         mWordsAdapter.swapCursor(myWordsList);
 
 
