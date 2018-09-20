@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WordsTest</string>
+    <string name="word">Введите ваше слово</string>
+    <string name="translation">Перевод слова</string>
+    <string name="addButton">Добавить слово</string>
+    <string name="context_delete">Удалить</string>
+    <string name="context_rename">Переиминовать</string>
+    <string name="options_delete_all">Удалить все</string>
+    <string name="training">Начать тренировку</string>
+    <string name="newword">Добавить слово</string>
+    <string name="nextButton">Следующее</string>
+    <string name="word_update">Слово обновлено</string>
+    <string name="word_update_error">Ошибка с переиминованием</string>
+    <string name="word_saved_error">Ошибка с добавлением слова</string>
+    <string name="word_saved">Слово добавлено</string>
+    <string name="dialog_new_word">Новое слово</string>
+    <string name="dialog_new_word_enter">Введите слово и перевод</string>
+    <string name="dialog_your_word">Ваше слово</string>
+    <string name="dialog_your_translation">Ваш перевод</string>
+    <string name="dialog_rename_word">Переиминовать слово</string>
+    <string name="dialog_rename_input">Введите новое слово или перевод</string>
+    <string name="dialog_add_button">Добавить</string>
+    <string name="dialog_rename_button">Переиминовать</string>
+    <string name="dialog_toast_empty">Вы должны ввести слово и перевод</string>
+    <string name="text_view_no_words">В словаре еще нет слов</string>
+</resources>

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WordsTest</string>
+    <string name="app_name" translatable="false">WordsTest</string>
     <string name="word">Enter your word</string>
     <string name="translation">Translation for this word</string>
     <string name="addButton">Add word</string>
