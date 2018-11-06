@@ -19,6 +19,9 @@ android {
     }
 }
 
+ext.versionRetrofit = '2.4.0'
+ext.versionOkHttpLogingInterceptor = '3.6.0'
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -30,4 +33,12 @@ dependencies {
     compile 'com.android.support:design:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
+    compile "io.reactivex.rxjava2:rxjava:2.2.2"
+    compile 'io.reactivex.rxjava2:rxandroid:2.1.0'
+    //networking
+    compile "com.squareup.retrofit2:retrofit:$versionRetrofit"
+    compile "com.squareup.retrofit2:converter-gson:$versionRetrofit"
+    compile "com.squareup.retrofit2:adapter-rxjava2:$versionRetrofit"
+    compile "com.squareup.okhttp3:logging-interceptor:$versionOkHttpLogingInterceptor"
+
 }

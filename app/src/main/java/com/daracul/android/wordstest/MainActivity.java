@@ -24,8 +24,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.daracul.android.wordstest.data.WordsContract;
+import com.daracul.android.wordstest.network.RestApi;
+import com.daracul.android.wordstest.network.WordDTO;
 
 import java.util.ArrayList;
+
+import io.reactivex.Scheduler;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -141,6 +149,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         editWord.setHint(hint1);
         final EditText editTranslation = new EditText(this);
         editTranslation.setHint(hint2);
+        editTranslation.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus){
+                    translateWord(editWord.getText().toString(), editTranslation);
+                }
+            }
+        });
         alert.setMessage(message);
         alert.setTitle(title);
         LinearLayout layout = new LinearLayout(this);
@@ -232,5 +248,23 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     }
 
+    private void translateWord(String word, final EditText translatedText){
 
+        Disposable disposable = RestApi.getInstance()
+                .translateEndpoint()
+                .translationObject("en-ru", word)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<WordDTO>() {
+                    @Override
+                    public void accept(WordDTO wordDTO) throws Exception {
+                        translatedText.setText(wordDTO.getText().get(0));
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        Log.d(LOG_TAG,throwable.toString());
+                    }
+                });
+    }
 }
